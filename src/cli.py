@@ -156,7 +156,10 @@ if __name__ == "__main__":
         #eval_steps=100,                      # Evaluate every 100 steps
         save_steps=500,                      # Save checkpoint every 500 steps
         report_to="tensorboard",
+        push_to_hub=True,
+        push_to_hub_model_id="Polycrest-Qwen-1.5B",
         
+        #push_to_hub_organization="hankbeasley",
     )
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
@@ -180,7 +183,7 @@ if __name__ == "__main__":
         train_dataset=split_dataset['train'],
         eval_dataset=split_dataset['test'],
         data_collator=data_collator, 
-        push_to_hub=True
+        
         
     )
     trainer.train()
