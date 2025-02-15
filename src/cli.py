@@ -106,11 +106,11 @@ if __name__ == "__main__":
 
     
     # Model path
-    model_path = os.path.expanduser("~/models/DeepSeek-R1-Distill-Qwen-1.5B")
-    model_id = model_path
+    #model_path = os.path.expanduser("~/models/DeepSeek-R1-Distill-Qwen-1.5B")
+    model_id = "Hankbeasley/Polycrest-Qwen-1.5B"
     #model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
 
     # Load model on CPU
     
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         #eval_steps=100,                      # Evaluate every 100 steps
         save_steps=500,                      # Save checkpoint every 500 steps
         report_to="tensorboard",
-        max_length=2000
+        
     )
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
@@ -179,8 +179,8 @@ if __name__ == "__main__":
         args=trainargs,
         train_dataset=split_dataset['train'],
         eval_dataset=split_dataset['test'],
-        data_collator=data_collator 
-
+        data_collator=data_collator, 
+        push_to_hub=True
         
     )
     trainer.train()

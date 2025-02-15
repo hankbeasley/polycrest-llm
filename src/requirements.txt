@@ -3,3 +3,5 @@ openai
 streamlit
 transformers
 trl
+tensorboard
+flash-attn
