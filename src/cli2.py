@@ -63,10 +63,10 @@ if __name__ == "__main__":
     print(split_dataset)
     trainargs = DPOConfig (
         
-        output_dir="output",
-        logging_dir="output/logs",           # Directory to save logs
+        output_dir="/work/output",
+        logging_dir="/work/output/logs",           # Directory to save logs
         logging_steps=50,                    # Log every 50 steps
-        per_device_train_batch_size=7,
+        per_device_train_batch_size=15,
         per_device_eval_batch_size=1,
         evaluation_strategy="steps",         # Evaluate every few steps
         eval_steps=100,                      # Evaluate every 100 steps
