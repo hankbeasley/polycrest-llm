@@ -2,7 +2,7 @@ import shutil
 from threading import Thread
 import os
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer, TrainerCallback
 
 from trl import (
     ModelConfig,
@@ -19,19 +19,20 @@ from transformers import DataCollatorWithPadding
 from typing import List, Dict, Any
 from transformers import PreTrainedTokenizerBase
 
-class AlreadyTokenized :
-    def __call__(self, data: str) -> str:
-        return f"Processed: {data}"
+class CustomStepCallback(TrainerCallback):
+    def __init__(self, step_frequency: int, directory:str):
+        self.step_frequency = step_frequency
+        self.directory = directory
+
+    def on_step_end(self, args, state, control, **kwargs):
+        # Check if the current step is a multiple of the given frequency
+        if state.global_step % self.step_frequency == 0:
+            print("deleteing:" + self.directory)
+            shutil.rmtree(self.directory)
+        return control
 
 
 
-class CustomSFTTrainer(SFTTrainer):
-    def push_to_hub(self, *args, **kwargs):
-        # Call the original push to hub functionality
-        super().push_to_hub(*args, **kwargs)
-        # Now delete the local output directory after pushing
-        shutil.rmtree(self.args.output_dir)
-        
 def find_max_length(dataset, column_name):
     return max(len(tokens) for tokens in dataset[column_name])
 def preprocess_function2(examples):
@@ -65,7 +66,7 @@ if __name__ == "__main__":
     # Model path
     #model_path = os.path.expanduser("~/models/DeepSeek-R1-Distill-Qwen-1.5B")
     #model_id = "Hankbeasley/Polycrest-Qwen-1.5B"
-    model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    model_id = "Hankbeasley/PolycrestSFT-Qwen-1.5B"
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
 
@@ -80,11 +81,10 @@ if __name__ == "__main__":
     ds = ds['train'].filter(lambda x: (len(x['input_ids']) < 7000))
     
     # Create train/test split (80% train, 20% test by default)
-    split_dataset = ds.train_test_split(test_size=0.2)
+    split_dataset = ds.train_test_split(test_size=0.2, shuffle=False)
+    split_dataset['train'] = split_dataset['train'].shuffle(seed=42)
 
-    print(split_dataset)
-
-    print(split_dataset)
+    
     trainargs = SFTConfig (
         max_seq_length=7000,
         output_dir="/work/output",
@@ -95,7 +95,7 @@ if __name__ == "__main__":
         eval_strategy="steps",         # Evaluate every few steps
         eval_steps=100,                      # Evaluate every 100 steps
         # Save checkpoint every 500 steps
-        save_steps=200,
+        save_steps=50,
         report_to="tensorboard",
         dataset_kwargs = {
             "skip_prepare_dataset": True,
@@ -116,13 +116,14 @@ if __name__ == "__main__":
 
     #data_collator = DualDataCollator(tokenizer)
     
-    trainer = CustomSFTTrainer(
+    trainer = SFTTrainer(
 
         model=model,
         processing_class=tokenizer,
         args=trainargs,
         train_dataset=split_dataset['train'],
         eval_dataset=split_dataset['test'],
+        callbacks=[CustomStepCallback(51,"/work/output")]
         #data_collator=data_collator, 
         
         
