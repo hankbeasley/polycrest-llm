@@ -2,8 +2,8 @@ FROM runpod/vscode-server:0.0.0
 
 
 RUN apt-get update -y && \
-    apt-get upgrade -y && \
-    apt-get install glances -y
+    apt-get upgrade -y
+    
 
 WORKDIR / 
 COPY /src /work/polycrest-llm/src
@@ -15,6 +15,7 @@ RUN ls
 RUN pip install -r requirements.txt
 RUN pip install flash-attn --no-build-isolation
 RUN git pull
+RUN python predownload.py
 
 WORKDIR /
 COPY ./docker/post_start.sh .
