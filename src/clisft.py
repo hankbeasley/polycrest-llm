@@ -27,8 +27,13 @@ class CustomStepCallback(TrainerCallback):
     def on_step_end(self, args, state, control, **kwargs):
         # Check if the current step is a multiple of the given frequency
         if state.global_step % self.step_frequency == 0:
-            print("deleteing:" + self.directory)
-            shutil.rmtree(self.directory)
+           
+            for item in os.listdir(self.directory):
+                if (item.startswith("checkpoint")):
+                    item_path = os.path.join(self.directory, item)
+                    if os.path.isdir(item_path):
+                        print("deleteing:" + item_path)
+                        shutil.rmtree(item_path)
         return control
 
 
@@ -88,7 +93,7 @@ if __name__ == "__main__":
     trainargs = SFTConfig (
         max_seq_length=7000,
         output_dir="/work/output",
-        logging_dir="/work/output/logs",           # Directory to save logs
+        logging_dir="/work/output/logsr1",           # Directory to save logs
         logging_steps=20,                    # Log every 50 steps
         per_device_train_batch_size=2,
         per_device_eval_batch_size=2,
@@ -123,7 +128,7 @@ if __name__ == "__main__":
         args=trainargs,
         train_dataset=split_dataset['train'],
         eval_dataset=split_dataset['test'],
-        callbacks=[CustomStepCallback(51,"/work/output")]
+        callbacks=[CustomStepCallback(49,"/work/output")]
         #data_collator=data_collator, 
         
         
