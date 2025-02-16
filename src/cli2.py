@@ -37,12 +37,6 @@ def preprocess_function2(examples):
 
 if __name__ == "__main__":
     print("Starting...")
-
-    
-
-
-    
-
     
     # Model path
     #model_path = os.path.expanduser("~/models/DeepSeek-R1-Distill-Qwen-1.5B")
@@ -72,15 +66,15 @@ if __name__ == "__main__":
         output_dir="output",
         logging_dir="output/logs",           # Directory to save logs
         logging_steps=50,                    # Log every 50 steps
-        per_device_train_batch_size=1,
+        per_device_train_batch_size=7,
         per_device_eval_batch_size=1,
-        #evaluation_strategy="steps",         # Evaluate every few steps
-        #eval_steps=100,                      # Evaluate every 100 steps
-        save_steps=500,                      # Save checkpoint every 500 steps
+        evaluation_strategy="steps",         # Evaluate every few steps
+        eval_steps=100,                      # Evaluate every 100 steps
+        save_steps=100,                      # Save checkpoint every 500 steps
         report_to="tensorboard",
-        #push_to_hub=True,
-        #push_to_hub_model_id="Polycrest-Qwen-1.5B",
-        
+        push_to_hub=True,
+        push_to_hub_model_id="Polycrest-Qwen-1.5B",
+        hub_model_id="Hankbeasley/Polycrest-Qwen-1.5B",
         #push_to_hub_organization="hankbeasley",
     )
     model = AutoModelForCausalLM.from_pretrained(
