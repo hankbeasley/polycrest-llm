@@ -57,7 +57,7 @@ if __name__ == "__main__":
     print (ds)
     ds = ds.filter(lambda x: (len(x['chosen'])<35000 and len(x['rejected'])<35000))
     print (ds)
-    ds.remove_columns_(["accept", "reject", "testname"])
+    ds.remove_columns(["accept", "reject", "testname"])
     # Create train/test split (80% train, 20% test by default)
     split_dataset = ds.train_test_split(test_size=0.2)
     print(split_dataset)
