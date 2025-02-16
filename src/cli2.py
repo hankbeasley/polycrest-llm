@@ -57,7 +57,7 @@ if __name__ == "__main__":
     print (ds)
     ds = ds.filter(lambda x: (len(x['chosen'])<35000 and len(x['rejected'])<35000))
     print (ds)
-    ds.remove_columns(["accept", "reject", "testname"])
+    ds = ds.remove_columns(["accept", "reject", "testname"])
     # Create train/test split (80% train, 20% test by default)
     split_dataset = ds.train_test_split(test_size=0.2)
     print(split_dataset)
@@ -73,7 +73,6 @@ if __name__ == "__main__":
         save_steps=100,                      # Save checkpoint every 500 steps
         report_to="tensorboard",
         push_to_hub=True,
-        push_to_hub_model_id="Polycrest-Qwen-1.5B",
         hub_model_id="Hankbeasley/Polycrest-Qwen-1.5B",
         #push_to_hub_organization="hankbeasley",
     )
@@ -94,8 +93,8 @@ if __name__ == "__main__":
         model=model,
         processing_class=tokenizer,
         args=trainargs,
-        train_dataset=split_dataset['train']
-        #eval_dataset=split_dataset['test'],
+        train_dataset=split_dataset['train'],
+        eval_dataset=split_dataset['test']
         #data_collator=data_collator, 
         
         
