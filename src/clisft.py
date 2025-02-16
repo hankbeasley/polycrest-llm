@@ -19,6 +19,12 @@ from transformers import DataCollatorWithPadding
 from typing import List, Dict, Any
 from transformers import PreTrainedTokenizerBase
 
+class AlreadyTokenized :
+    def __call__(self, data: str) -> str:
+        return f"Processed: {data}"
+
+
+
 class CustomSFTTrainer(SFTTrainer):
     def push_to_hub(self, *args, **kwargs):
         # Call the original push to hub functionality
@@ -70,26 +76,30 @@ if __name__ == "__main__":
 # Load JSON dataset
     #dataset = load_dataset('json', data_files='path/to/your_dataset.json')
 
-    ds = load_dataset("Hankbeasley/polycoder")
-    ds = ds['train'].map(preprocess_functionSFT, batched=False)
-    print (ds)
-    ds = ds.filter(lambda x: (len(x['completion'])<35000))
-    print (ds)
-    ds = ds.remove_columns(["accept", "reject", "testname"])
+    ds = load_dataset("Hankbeasley/tokenizedAccept")
+    ds = ds['train'].filter(lambda x: (len(x['input_ids']) < 7000))
+    
     # Create train/test split (80% train, 20% test by default)
     split_dataset = ds.train_test_split(test_size=0.2)
+
+    print(split_dataset)
+
     print(split_dataset)
     trainargs = SFTConfig (
         max_seq_length=7000,
         output_dir="/work/output",
         logging_dir="/work/output/logs",           # Directory to save logs
-        logging_steps=50,                    # Log every 50 steps
+        logging_steps=1,                    # Log every 50 steps
         per_device_train_batch_size=1,
         per_device_eval_batch_size=1,
-        evaluation_strategy="steps",         # Evaluate every few steps
-        eval_steps=100,                      # Evaluate every 100 steps
-        save_steps=100,                      # Save checkpoint every 500 steps
+        eval_strategy="steps",         # Evaluate every few steps
+        eval_steps=10,                      # Evaluate every 100 steps
+        # Save checkpoint every 500 steps
+        save_steps=500,
         report_to="tensorboard",
+        dataset_kwargs = {
+            "skip_prepare_dataset": True,
+        }
         #push_to_hub=True,
         #hub_model_id="Hankbeasley/PolycrestSFT-Qwen-1.5B",
         #push_to_hub_organization="hankbeasley",
@@ -112,7 +122,7 @@ if __name__ == "__main__":
         processing_class=tokenizer,
         args=trainargs,
         train_dataset=split_dataset['train'],
-        eval_dataset=split_dataset['test']
+        eval_dataset=split_dataset['test'],
         #data_collator=data_collator, 
         
         
