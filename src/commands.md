@@ -5,3 +5,7 @@ export HF_TOKEN=$RUNPOD_HF_TOKEN
 
 
 pip install flash-attn --no-build-isolation
+
+$env:CUDA_HOME = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8"
+
+https://pytorch.org/get-started/locally/

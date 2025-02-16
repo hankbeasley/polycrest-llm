@@ -107,8 +107,8 @@ if __name__ == "__main__":
     
     # Model path
     #model_path = os.path.expanduser("~/models/DeepSeek-R1-Distill-Qwen-1.5B")
-    model_id = "Hankbeasley/Polycrest-Qwen-1.5B"
-    #model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    #model_id = "Hankbeasley/Polycrest-Qwen-1.5B"
+    model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
 
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     print(max_length_chosen)
     print(max_length_rejected)
     print(min(len(tokens) for tokens in split_dataset["train"]["input_ids_rejected"]))
-    trainargs = RewardConfig(
+    trainargs = RewardConfig (
         
         output_dir="output",
         logging_dir="output/logs",           # Directory to save logs
@@ -166,8 +166,6 @@ if __name__ == "__main__":
         device_map="auto",  
         torch_dtype=torch.bfloat16,
         attn_implementation="flash_attention_2"
-        
-           
     )
     model.gradient_checkpointing_enable()
     print(model)

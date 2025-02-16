@@ -4,5 +4,3 @@ streamlit
 transformers
 trl
 tensorboard
-torch
-flash-attn
