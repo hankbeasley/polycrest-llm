@@ -14,7 +14,7 @@ RUN python -m pip install --upgrade pip
 RUN ls
 RUN pip install -r requirements.txt
 RUN pip install flash-attn --no-build-isolation
-RUN git pull
+#RUN git pull
 RUN python predownload.py
 
 WORKDIR /
@@ -34,4 +34,4 @@ EXPOSE 8000
 
 
 #docker build -t hankbeasley/polycess-runpod:0.0.5 -f docker/Dockerfile . 
-#docker push hankbeasley/polycress-runpod:0.0.4
+#docker push hankbeasley/polycress-runpod:0.0.5
