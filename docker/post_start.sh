@@ -13,4 +13,8 @@ git config --global user.email "hankbeasleymail@yahoo.com"
 export HF_TOKEN=$RUNPOD_HF_TOKEN
 cd /workspace/polycrest-llm
 git pull
+
+printenv | grep -E '^HF_' | awk -F = '{ print "export " $1 "=\"" $2 "\"" }' >> /etc/rp_environment
+echo 'source /etc/rp_environment' >> ~/.bashrc
+
 start-vscode
