@@ -35,16 +35,6 @@ def preprocess_function2(examples):
     examples['rejected'] = "<think>" + partsrejected[1]
     return examples
 
-def preprocess_functionSFT(examples):
-    parts = examples['accept'].split('<think>')
-    if (len(parts) < 2 or len(parts) > 2 or len(partsrejected) < 2 or len(partsrejected) > 2):
-        return None
-    assistantparts = examples['accept'].split("<｜Assistant｜>")
-    if (len(assistantparts) > 2):
-        return None
-    examples['prompt'] = parts[0]
-    examples['completion'] = parts[1]
-    return examples
 
 if __name__ == "__main__":
     print("Starting...")
@@ -111,41 +101,3 @@ if __name__ == "__main__":
         
     )
     trainer.train()
-
-
-
-    # # Input prompt
-    # prompt = "Hello, how are you today?"
-    # inputs = tokenizer(
-    #     prompt,
-    #     return_tensors="pt",          # Return PyTorch tensors
-    #     padding=True,                 # Add padding to match model input requirements
-    #     truncation=True,              # Truncate if the input is too long
-    #     max_length=50,                # Set a maximum input length
-    # )
-
-    # # Initialize the streamer
-    # streamer = TextIteratorStreamer(
-    #     tokenizer,
-    #     skip_special_tokens=True,  # Skip special tokens in the output
-    # )
-
-    # # Launch the generation in a separate thread to allow real-time streaming
-    # def generate_text():
-    #     model.generate(
-    #         input_ids=inputs.input_ids,
-    #         attention_mask=inputs.attention_mask,
-    #         max_length=100,
-    #         temperature=0.7,
-    #         pad_token_id=tokenizer.eos_token_id,
-    #         streamer=streamer,  # Pass the streamer
-    #     )
-
-    # generation_thread = Thread(target=generate_text)
-    # generation_thread.start()
-
-    # # Stream and print the generated tokens
-    # print("Generated Text (streaming):", end=" ", flush=True)
-    # for token in streamer:
-    #     print(token, end="", flush=True)
-    # print("\nDone!")
