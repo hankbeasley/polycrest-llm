@@ -39,19 +39,14 @@ def preprocess_function2(examples):
 if __name__ == "__main__":
     print("Starting...")
     
-    # Model path
-    #model_path = os.path.expanduser("~/models/DeepSeek-R1-Distill-Qwen-1.5B")
-    #model_id = "Hankbeasley/Polycrest-Qwen-1.5B"
     model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
 
     # Load model on CPU
     
     from datasets import load_dataset
-
-# Load JSON dataset
-    #dataset = load_dataset('json', data_files='path/to/your_dataset.json')
 
     ds = load_dataset("Hankbeasley/polycoder")
     ds = ds['train'].map(preprocess_function2, batched=False)
@@ -73,8 +68,9 @@ if __name__ == "__main__":
         eval_steps=100,                      # Evaluate every 100 steps
         save_steps=100,                      # Save checkpoint every 500 steps
         report_to="tensorboard",
-        push_to_hub=True,
-        hub_model_id="Hankbeasley/Polycrest-Qwen-1.5B",
+        #dataset_num_proc = 12,
+        #push_to_hub=True,
+        #hub_model_id="Hankbeasley/Polycrest-Qwen-1.5B",
         #push_to_hub_organization="hankbeasley",
     )
     model = AutoModelForCausalLM.from_pretrained(
