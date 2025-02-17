@@ -39,10 +39,11 @@ def preprocess_function2(examples):
 if __name__ == "__main__":
     print("Starting...")
     
-    model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    #model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    model_id = "Hankbeasley/PolycrestSFT-Qwen-7B"
     
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
+    tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-7B")
 
     # Load model on CPU
     
@@ -62,13 +63,13 @@ if __name__ == "__main__":
         output_dir="/work/output",
         logging_dir="/work/output/logs",           # Directory to save logs
         logging_steps=50,                    # Log every 50 steps
-        per_device_train_batch_size=15,
+        per_device_train_batch_size=1,
         per_device_eval_batch_size=1,
         evaluation_strategy="steps",         # Evaluate every few steps
         eval_steps=100,                      # Evaluate every 100 steps
         save_steps=100,                      # Save checkpoint every 500 steps
         report_to="tensorboard",
-        #dataset_num_proc = 12,
+        dataset_num_proc = 12,
         #push_to_hub=True,
         #hub_model_id="Hankbeasley/Polycrest-Qwen-1.5B",
         #push_to_hub_organization="hankbeasley",
@@ -77,7 +78,7 @@ if __name__ == "__main__":
         model_id,
         device_map="auto",  
         torch_dtype=torch.bfloat16,
-        #attn_implementation="flash_attention_2"
+        attn_implementation="flash_attention_2"
     )
     model.gradient_checkpointing_enable()
     print(model)
