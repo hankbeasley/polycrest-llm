@@ -69,7 +69,7 @@ if __name__ == "__main__":
         eval_steps=100,                      # Evaluate every 100 steps
         save_steps=100,                      # Save checkpoint every 500 steps
         report_to="tensorboard",
-        dataset_num_proc = 12,
+        dataset_num_proc = 40,
         #push_to_hub=True,
         #hub_model_id="Hankbeasley/Polycrest-Qwen-1.5B",
         #push_to_hub_organization="hankbeasley",
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         model_id,
         device_map="auto",  
         torch_dtype=torch.bfloat16,
-        attn_implementation="flash_attention_2"
+        #attn_implementation="sdpa"
     )
     model.gradient_checkpointing_enable()
     print(model)
