@@ -2,7 +2,7 @@ import shutil
 from threading import Thread
 import os
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer, TrainerCallback
 
 from trl import (
     ModelConfig,
@@ -19,19 +19,25 @@ from transformers import DataCollatorWithPadding
 from typing import List, Dict, Any
 from transformers import PreTrainedTokenizerBase
 
-class AlreadyTokenized :
-    def __call__(self, data: str) -> str:
-        return f"Processed: {data}"
+class CustomStepCallback(TrainerCallback):
+    def __init__(self, step_frequency: int, directory:str):
+        self.step_frequency = step_frequency
+        self.directory = directory
+
+    def on_step_end(self, args, state, control, **kwargs):
+        # Check if the current step is a multiple of the given frequency
+        if state.global_step % self.step_frequency == 0:
+           
+            for item in os.listdir(self.directory):
+                if (item.startswith("checkpoint")):
+                    item_path = os.path.join(self.directory, item)
+                    if os.path.isdir(item_path):
+                        print("deleteing:" + item_path)
+                        shutil.rmtree(item_path)
+        return control
 
 
 
-class CustomSFTTrainer(SFTTrainer):
-    def push_to_hub(self, *args, **kwargs):
-        # Call the original push to hub functionality
-        super().push_to_hub(*args, **kwargs)
-        # Now delete the local output directory after pushing
-        shutil.rmtree(self.args.output_dir)
-        
 def find_max_length(dataset, column_name):
     return max(len(tokens) for tokens in dataset[column_name])
 def preprocess_function2(examples):
@@ -65,9 +71,9 @@ if __name__ == "__main__":
     # Model path
     #model_path = os.path.expanduser("~/models/DeepSeek-R1-Distill-Qwen-1.5B")
     #model_id = "Hankbeasley/Polycrest-Qwen-1.5B"
-    model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
+    tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-7B")
 
     # Load model on CPU
     
@@ -80,35 +86,34 @@ if __name__ == "__main__":
     ds = ds['train'].filter(lambda x: (len(x['input_ids']) < 7000))
     
     # Create train/test split (80% train, 20% test by default)
-    split_dataset = ds.train_test_split(test_size=0.2)
+    split_dataset = ds.train_test_split(test_size=0.1, shuffle=False)
+    split_dataset['train'] = split_dataset['train'].shuffle(seed=42)
 
-    print(split_dataset)
-
-    print(split_dataset)
+    
     trainargs = SFTConfig (
         max_seq_length=7000,
         output_dir="/work/output",
-        logging_dir="/work/output/logs",           # Directory to save logs
-        logging_steps=1,                    # Log every 50 steps
+        logging_dir="/work/output/logsr2",           # Directory to save logs
+        logging_steps=20,                    # Log every 50 steps
         per_device_train_batch_size=1,
         per_device_eval_batch_size=1,
         eval_strategy="steps",         # Evaluate every few steps
-        eval_steps=10,                      # Evaluate every 100 steps
+        eval_steps=150,                      # Evaluate every 100 steps
         # Save checkpoint every 500 steps
-        save_steps=500,
+        save_steps=150,
         report_to="tensorboard",
         dataset_kwargs = {
             "skip_prepare_dataset": True,
-        }
-        #push_to_hub=True,
-        #hub_model_id="Hankbeasley/PolycrestSFT-Qwen-1.5B",
+        },
+        push_to_hub=True,
+        hub_model_id="Hankbeasley/PolycrestSFT-Qwen-7B",
         #push_to_hub_organization="hankbeasley",
     )
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
         device_map="auto",  
         torch_dtype=torch.bfloat16,
-        #attn_implementation="flash_attention_2"
+        attn_implementation="flash_attention_2"
     )
     model.gradient_checkpointing_enable()
     print(model)
@@ -116,13 +121,14 @@ if __name__ == "__main__":
 
     #data_collator = DualDataCollator(tokenizer)
     
-    trainer = CustomSFTTrainer(
+    trainer = SFTTrainer(
 
         model=model,
         processing_class=tokenizer,
         args=trainargs,
         train_dataset=split_dataset['train'],
         eval_dataset=split_dataset['test'],
+        callbacks=[CustomStepCallback(148,"/work/output")]
         #data_collator=data_collator, 
         
         
