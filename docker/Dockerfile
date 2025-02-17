@@ -33,5 +33,5 @@ EXPOSE 8000
 #CMD [ "bin/bash" ]
 
 
-#docker build -t hankbeasley/polycess-runpod:0.0.5 -f docker/Dockerfile . 
-#docker push hankbeasley/polycress-runpod:0.0.5
+#docker build -t hankbeasley/polycess-runpod:hb7.0.7 -f docker/Dockerfile . 
+#docker push hankbeasley/polycress-runpod:hb7.0.7

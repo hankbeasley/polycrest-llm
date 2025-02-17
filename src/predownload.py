@@ -19,7 +19,7 @@ from typing import List, Dict, Any
 from transformers import PreTrainedTokenizerBase
 if __name__ == "__main__":
     print("Starting...")
-    model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    model_id = "Hankbeasley/PolycrestSFT-Qwen-7B"
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
