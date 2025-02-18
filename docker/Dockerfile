@@ -1,4 +1,4 @@
-FROM hankbeasley/vscode-server:0.1.3
+FROM hankbeasley/vscode-server:NV0.1.3
 
 
 RUN apt-get update -y && \
@@ -17,7 +17,11 @@ RUN pip install -r requirements.txt
 #RUN pip install flash-attn --no-build-isolation
 #RUN git pull
 #RUN  pip uninstall transformer-engine
-RUN python predownload.py
+#RUN python3.12 -m pip install --upgrade setuptools
+#RUN pip install numpy==1.26.4
+RUN pip install sagemaker
+#RUN pip install --force-reinstall -v "numpy==1.25.2"
+#RUN python predownload.py
 
 WORKDIR /
 COPY ./docker/post_start.sh .
