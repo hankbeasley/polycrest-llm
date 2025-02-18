@@ -2,5 +2,6 @@ litserve
 openai
 streamlit
 transformers
-trl
+trl==0.15.0
 tensorboard
+deepspeed
