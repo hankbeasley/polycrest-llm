@@ -1,4 +1,4 @@
-FROM runpod/vscode-server:0.0.0
+FROM hankbeasley/vscode-server:0.1.3
 
 
 RUN apt-get update -y && \
@@ -13,8 +13,10 @@ WORKDIR /work/polycrest-llm/src
 RUN python -m pip install --upgrade pip
 RUN ls
 RUN pip install -r requirements.txt
-RUN pip install flash-attn --no-build-isolation
+#RUN pip install git+https://github.com/huggingface/transformers
+#RUN pip install flash-attn --no-build-isolation
 #RUN git pull
+#RUN  pip uninstall transformer-engine
 RUN python predownload.py
 
 WORKDIR /
