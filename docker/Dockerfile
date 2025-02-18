@@ -21,7 +21,7 @@ RUN pip install -r requirements.txt
 #RUN pip install numpy==1.26.4
 RUN pip install sagemaker
 #RUN pip install --force-reinstall -v "numpy==1.25.2"
-RUN python predownload.py
+#RUN python predownload.py
 
 WORKDIR /
 COPY ./docker/post_start.sh .
