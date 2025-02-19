@@ -19,12 +19,10 @@ def preprocess_function2(examples):
     examples['rejected'] = "<think>" + partsrejected[1]
     return examples
 
-modelid = "Hankbeasley/PolycrestSFT-Qwen-7B"
+modelid = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
 #modelid = "Qwen/Qwen2-0.5B-Instruct"
 model = AutoModelForCausalLM.from_pretrained(modelid)
-model_ref = AutoModelForCausalLM.from_pretrained(modelid, torch_dtype=torch.bfloat16,
- attn_implementation="flash_attention_2"
- )
+#model_ref = AutoModelForCausalLM.from_pretrained(modelid).to("cpu")
 tokenizer = AutoTokenizer.from_pretrained(modelid)
 #train_dataset = load_dataset("trl-lib/ultrafeedback_binarized", split="train")
 
@@ -37,11 +35,11 @@ split_dataset = ds.train_test_split(test_size=0.2)
 training_args = DPOConfig(output_dir="Qwen2-0.5B-DPO", 
                           logging_steps=10,  
                           gradient_checkpointing=True, 
-                          per_device_train_batch_size=1, 
+                          per_device_train_batch_size=15, 
                           dataset_num_proc=15,
-                          gradient_accumulation_steps=1,
+                          gradient_accumulation_steps=4,
                           bf16=True)
 trainer = DPOTrainer(model=model,
-                     ref_model=model_ref, 
+                     #ref_model=model_ref, 
                      args=training_args, processing_class=tokenizer, train_dataset=ds)
 trainer.train()
