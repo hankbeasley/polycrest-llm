@@ -14,7 +14,8 @@ def preprocess_function2(examples):
     if (len(assistantparts) > 2):
         return None
     examples['prompt'] = parts[0]
-    examples['chosen'] = parts[1]
+    
+    examples['chosen'] = "<think>" + parts[1]
     
     examples['rejected'] = "<think>" + partsrejected[1]
     return examples
@@ -43,11 +44,13 @@ training_args = DPOConfig (output_dir="Qwen2-0.5B-DPO",
                           logging_steps=10,  
                           gradient_checkpointing=True, 
                           per_device_train_batch_size=1, 
-                          dataset_num_proc=15,
+                          dataset_num_proc=30,
                           precompute_ref_log_probs=True,
                           precompute_ref_batch_size=1,
                           gradient_accumulation_steps=1,
-                          max_length=7000,
+                          max_length=None,
+                          max_prompt_length=None,
+                          max_completion_length=None,
                           bf16=True)
 
 trainer = DPOTrainer(model=model,

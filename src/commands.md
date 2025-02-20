@@ -13,3 +13,4 @@ https://pytorch.org/get-started/locally/
 pip install huggingface_hub[hf_transfer]
 
 export HF_HUB_ENABLE_HF_TRANSFER=1
+nvidia-smi --loop-ms=500
