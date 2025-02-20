@@ -2,6 +2,7 @@ import shutil
 from threading import Thread
 import os
 import torch
+import deepspeed
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer, TrainerCallback
 
 from trl import (
@@ -48,6 +49,10 @@ def preprocess_function2(examples):
     examples['rejected'] = "<think>\n" + partsrejected[1]
     return examples
 
+def p(examples):
+    examples['text'] = examples['prompt'] +  examples['chosen']
+    return examples
+
 if __name__ == "__main__":
     print("Starting...")
     
@@ -64,12 +69,14 @@ if __name__ == "__main__":
 
     current = load_dataset("Hankbeasley/polycodertext")['train']
    
-    dsinput = current.rename_column("chosen", "completion")
+    dsinput = current.map(p)
+    dsinput = dsinput.filter(lambda x: len(x['text']) < 30000)
+    print(dsinput)
     # Create train/test split (80% train, 20% test by default)
     split_dataset = dsinput.train_test_split(test_size=0.1, shuffle=False)
     
     trainargs = SFTConfig (
-        max_seq_length=None,
+        max_seq_length=6000,
         output_dir="/work/output",
         logging_dir="/work/output/logsr3",           # Directory to save logs
         logging_steps=20,                    # Log every 50 steps
@@ -80,9 +87,10 @@ if __name__ == "__main__":
         dataset_num_proc=16,                      
         save_steps=50,
         report_to="tensorboard",
-        dataset_kwargs = {
-            "skip_prepare_dataset": True,
-        },
+        
+        # dataset_kwargs = {
+        #     "skip_prepare_dataset": True,
+        # },
         #push_to_hub=True,
         #hub_model_id="Hankbeasley/PolycrestSFT-Qwen-7B",
         #push_to_hub_organization="hankbeasley",
@@ -93,6 +101,10 @@ if __name__ == "__main__":
         torch_dtype=torch.bfloat16,
         attn_implementation="flash_attention_2"
     )
+
+    print (deepspeed.runtime.zero.stage3.estimate_zero3_model_states_mem_needs_all_live(model,num_gpus_per_node=3) )
+    exit()
+
     model.gradient_checkpointing_enable()
     print(model)
   
