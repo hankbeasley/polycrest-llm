@@ -19,12 +19,12 @@ def preprocess_function2(examples):
     examples['rejected'] = "<think>" + partsrejected[1]
     return examples
 
-#modelid = "Hankbeasley/PolycrestSFT-Qwen-7B"
-modelid = "Qwen/Qwen2-0.5B-Instruct"
-model = AutoModelForCausalLM.from_pretrained(modelid, torch_dtype=torch.bfloat16, attn_implementation="flex_attention")
-# model_ref = AutoModelForCausalLM.from_pretrained(modelid, torch_dtype=torch.bfloat16,
-#  #attn_implementation="flash_attention_2"
-#  )
+modelid = "Hankbeasley/PolycrestSFT-Qwen-7B"
+#modelid = "Qwen/Qwen2-0.5B-Instruct"
+model = AutoModelForCausalLM.from_pretrained(modelid)
+model_ref = AutoModelForCausalLM.from_pretrained(modelid, torch_dtype=torch.bfloat16,
+ attn_implementation="flash_attention_2"
+ )
 tokenizer = AutoTokenizer.from_pretrained(modelid)
 #train_dataset = load_dataset("trl-lib/ultrafeedback_binarized", split="train")
 
@@ -33,27 +33,15 @@ ds = ds['train'].map(preprocess_function2, batched=False)
 train_dataset = ds
 ds = ds.filter(lambda x: (len(x['chosen'])<35000 and len(x['rejected'])<35000))
 ds = ds.remove_columns(["accept", "reject", "testname"])
-
-ds = ds.select(range(10))
-
 split_dataset = ds.train_test_split(test_size=0.2)
-
-
-training_args = DPOConfig (output_dir="Qwen2-0.5B-DPO", 
+training_args = DPOConfig(output_dir="Qwen2-0.5B-DPO", 
                           logging_steps=10,  
                           gradient_checkpointing=True, 
                           per_device_train_batch_size=1, 
                           dataset_num_proc=15,
-                          precompute_ref_log_probs=True,
-                          precompute_ref_batch_size=1,
                           gradient_accumulation_steps=1,
                           bf16=True)
-
 trainer = DPOTrainer(model=model,
-                     #ref_model=model_ref, 
+                     ref_model=model_ref, 
                      args=training_args, processing_class=tokenizer, train_dataset=ds)
-a = trainer.get_train_dataloader()
-print(a)
-print(trainer.train_dataset)
-trainer.train_dataset.push_to_hub("Hankbeasley/testds")
-#trainer.train()
+trainer.train()
