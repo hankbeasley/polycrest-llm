@@ -19,6 +19,8 @@ from transformers import DataCollatorWithPadding
 from typing import List, Dict, Any
 from transformers import PreTrainedTokenizerBase
 
+os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+
 class CustomStepCallback(TrainerCallback):
     def __init__(self, step_frequency: int, directory:str):
         self.step_frequency = step_frequency
@@ -38,31 +40,12 @@ class CustomStepCallback(TrainerCallback):
 
 
 
-def find_max_length(dataset, column_name):
-    return max(len(tokens) for tokens in dataset[column_name])
 def preprocess_function2(examples):
     parts = examples['accept'].split('<think>')
     partsrejected = examples['reject'].split('<think>')
-    if (len(parts) < 2 or len(parts) > 2 or len(partsrejected) < 2 or len(partsrejected) > 2):
-        return None
-    assistantparts = examples['accept'].split("<｜Assistant｜>")
-    if (len(assistantparts) > 2):
-        return None
     examples['prompt'] = parts[0]
-    examples['chosen'] = parts[1]
-    
-    examples['rejected'] = "<think>" + partsrejected[1]
-    return examples
-
-def preprocess_functionSFT(examples):
-    parts = examples['accept'].split('<think>')
-    if (len(parts) < 2 or len(parts) > 2):
-        return None
-    assistantparts = examples['accept'].split("<｜Assistant｜>")
-    if (len(assistantparts) > 2):
-        return None
-    examples['prompt'] = parts[0]
-    examples['completion'] = parts[1]
+    examples['chosen'] = "<think>" + parts[1]
+    examples['rejected'] = "<think>\n" + partsrejected[1]
     return examples
 
 if __name__ == "__main__":
@@ -79,34 +62,29 @@ if __name__ == "__main__":
     
     from datasets import load_dataset
 
-# Load JSON dataset
-    #dataset = load_dataset('json', data_files='path/to/your_dataset.json')
-
-    ds = load_dataset("Hankbeasley/tokenizedAccept")
-    ds = ds['train'].filter(lambda x: (len(x['input_ids']) < 7000))
-    
+    current = load_dataset("Hankbeasley/polycodertext")['train']
+   
+    dsinput = current.rename_column("chosen", "completion")
     # Create train/test split (80% train, 20% test by default)
-    split_dataset = ds.train_test_split(test_size=0.1, shuffle=False)
-    split_dataset['train'] = split_dataset['train'].shuffle(seed=42)
-
+    split_dataset = dsinput.train_test_split(test_size=0.1, shuffle=False)
     
     trainargs = SFTConfig (
-        max_seq_length=7000,
+        max_seq_length=None,
         output_dir="/work/output",
-        logging_dir="/work/output/logsr2",           # Directory to save logs
+        logging_dir="/work/output/logsr3",           # Directory to save logs
         logging_steps=20,                    # Log every 50 steps
         per_device_train_batch_size=1,
         per_device_eval_batch_size=1,
         eval_strategy="steps",         # Evaluate every few steps
-        eval_steps=150,                      # Evaluate every 100 steps
-        # Save checkpoint every 500 steps
-        save_steps=150,
+        eval_steps=50,
+        dataset_num_proc=16,                      
+        save_steps=50,
         report_to="tensorboard",
         dataset_kwargs = {
             "skip_prepare_dataset": True,
         },
-        push_to_hub=True,
-        hub_model_id="Hankbeasley/PolycrestSFT-Qwen-7B",
+        #push_to_hub=True,
+        #hub_model_id="Hankbeasley/PolycrestSFT-Qwen-7B",
         #push_to_hub_organization="hankbeasley",
     )
     model = AutoModelForCausalLM.from_pretrained(
@@ -117,10 +95,7 @@ if __name__ == "__main__":
     )
     model.gradient_checkpointing_enable()
     print(model)
-    from transformers import DataCollatorWithPadding
-
-    #data_collator = DualDataCollator(tokenizer)
-    
+  
     trainer = SFTTrainer(
 
         model=model,
@@ -128,9 +103,10 @@ if __name__ == "__main__":
         args=trainargs,
         train_dataset=split_dataset['train'],
         eval_dataset=split_dataset['test'],
-        callbacks=[CustomStepCallback(148,"/work/output")]
+        callbacks=[CustomStepCallback(48,"/work/output")]
         #data_collator=data_collator, 
         
         
     )
     trainer.train()
+    trainer.push_to_hub("Hankbeasley/PolycrestSFT-Qwen-7B")
