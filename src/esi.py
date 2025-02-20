@@ -23,6 +23,8 @@ model = AutoModelForCausalLM.from_pretrained(
         #attn_implementation="flash_attention_2"
     )
 
-print (deepspeed.runtime.zero.stage3.estimate_zero3_model_states_mem_needs_all_live(model,num_gpus_per_node=4) )
-print (deepspeed.runtime.zero.stage_1_and_2.estimate_zero2_model_states_mem_needs_all_live(model,num_gpus_per_node=4) )
+print (deepspeed.runtime.zero.stage3.estimate_zero3_model_states_mem_needs_all_live(model,num_gpus_per_node=2) )
+print (deepspeed.runtime.zero.stage_1_and_2.estimate_zero2_model_states_mem_needs_all_live(model,num_gpus_per_node=2) )
+print (deepspeed.runtime.zero.stage_1_and_2.estimate_zero2_model_states_mem_needs_all_live(model,num_gpus_per_node=2) )
+
      #exit()

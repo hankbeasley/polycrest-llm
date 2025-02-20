@@ -98,9 +98,9 @@ if __name__ == "__main__":
     )
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
-        #device_map="auto",  
+        device_map="auto",  
         torch_dtype=torch.bfloat16,
-        #attn_implementation="flash_attention_2"
+        attn_implementation="flash_attention_2"
     )
 
     print (deepspeed.runtime.zero.stage3.estimate_zero3_model_states_mem_needs_all_live(model,num_gpus_per_node=3) )
