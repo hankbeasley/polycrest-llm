@@ -21,7 +21,7 @@ def preprocess_function2(examples):
 
 modelid = "Hankbeasley/PolycrestSFT-Qwen-7B"
 #modelid = "Qwen/Qwen2-0.5B-Instruct"
-model = AutoModelForCausalLM.from_pretrained(modelid, torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2")
+model = AutoModelForCausalLM.from_pretrained(modelid, torch_dtype=torch.bfloat16)
 # model_ref = AutoModelForCausalLM.from_pretrained(modelid, torch_dtype=torch.bfloat16,
 #  #attn_implementation="flash_attention_2"
 #  )
@@ -34,7 +34,7 @@ train_dataset = ds
 ds = ds.filter(lambda x: (len(x['chosen'])<35000 and len(x['rejected'])<35000))
 ds = ds.remove_columns(["accept", "reject", "testname"])
 
-ds = ds.select(range(10))
+#ds = ds.select(range(100))
 
 split_dataset = ds.train_test_split(test_size=0.2)
 
