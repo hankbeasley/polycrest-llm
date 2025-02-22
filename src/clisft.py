@@ -58,10 +58,10 @@ if __name__ == "__main__":
     
     # Model path
     #model_path = os.path.expanduser("~/models/DeepSeek-R1-Distill-Qwen-1.5B")
-    #model_id = "Hankbeasley/Polycrest-Qwen-1.5B"
-    model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
+    model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+    #model_id = "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-7B")
+    tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",)
 
     # Load model on CPU
     
@@ -76,18 +76,15 @@ if __name__ == "__main__":
     split_dataset = dsinput.train_test_split(test_size=0.1, shuffle=False)
     
     trainargs = SFTConfig (
-        max_seq_length=6000,
-        output_dir="/work/output",
-        logging_dir="/work/output/logsr3",           # Directory to save logs
+        max_seq_length=128,
+        output_dir="output",
+        logging_dir="output/logsrz",           # Directory to save logs
         logging_steps=20,                    # Log every 50 steps
         per_device_train_batch_size=1,
-        per_device_eval_batch_size=1,
-        eval_strategy="steps",         # Evaluate every few steps
-        eval_steps=50,
         dataset_num_proc=16,                      
         save_steps=50,
         report_to="tensorboard",
-        bf16=True
+        bf16=True,
         
         # dataset_kwargs = {
         #     "skip_prepare_dataset": True,
@@ -98,12 +95,13 @@ if __name__ == "__main__":
     )
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
-        device_map="auto",  
+        #device_map="auto",  
         torch_dtype=torch.bfloat16,
-        attn_implementation="flash_attention_2"
+        #attn_implementation="sdpa"
     )
-
-    print (deepspeed.runtime.zero.stage3.estimate_zero3_model_states_mem_needs_all_live(model,num_gpus_per_node=3) )
+    #print (deepspeed.runtime.zero.(model,num_gpus_per_node=2) )
+    
+    #print (deepspeed.runtime.zero.stage_1_and_2.estimate_zero2_model_states_mem_needs_all_live(model,num_gpus_per_node=2) )
     #exit()
 
     model.gradient_checkpointing_enable()
@@ -116,10 +114,10 @@ if __name__ == "__main__":
         args=trainargs,
         train_dataset=split_dataset['train'],
         eval_dataset=split_dataset['test'],
-        callbacks=[CustomStepCallback(48,"/work/output")]
+        #callbacks=[CustomStepCallback(48,"/work/output")]
         #data_collator=data_collator, 
         
         
     )
     trainer.train()
-    trainer.push_to_hub("Hankbeasley/PolycrestSFT-Qwen-7B")
+    #rainer.push_to_hub("Hankbeasley/PolycrestSFT-Qwen-7B")

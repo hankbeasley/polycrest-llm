@@ -21,7 +21,7 @@ def preprocess_function2(examples):
 
 #modelid = "Hankbeasley/PolycrestSFT-Qwen-7B"
 modelid = "Qwen/Qwen2-0.5B-Instruct"
-model = AutoModelForCausalLM.from_pretrained(modelid, torch_dtype=torch.bfloat16, attn_implementation="flex_attention")
+model = AutoModelForCausalLM.from_pretrained(modelid, torch_dtype=torch.bfloat16)
 # model_ref = AutoModelForCausalLM.from_pretrained(modelid, torch_dtype=torch.bfloat16,
 #  #attn_implementation="flash_attention_2"
 #  )
@@ -47,7 +47,10 @@ training_args = DPOConfig (output_dir="Qwen2-0.5B-DPO",
                           precompute_ref_log_probs=True,
                           precompute_ref_batch_size=1,
                           gradient_accumulation_steps=1,
-                          
+                          max_completion_length=None,
+                          max_length=None,
+                          max_prompt_length=None,
+                            
                           bf16=True)
 
 trainer = DPOTrainer(model=model,
@@ -56,5 +59,7 @@ trainer = DPOTrainer(model=model,
 a = trainer.get_train_dataloader()
 print(a)
 print(trainer.train_dataset)
-trainer.train_dataset.push_to_hub("Hankbeasley/testds")
+#trainer.train_dataset.push_to_hub("Hankbeasley/testds")
 #trainer.train()
+max_length = max(len(ids) for batch in a for ids in batch['prompt_input_ids'])
+print(f"Maximum length of prompt_input_ids: {max_length}")
